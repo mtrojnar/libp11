@@ -27,13 +27,17 @@ install_from_github() {
     echo "Installing $2"
     git clone https://github.com/$1/$2.git -b $3
     cd $2
-    autoreconf -fvi
-    ./configure
+    if test "$2" = "openssl"; then
+        ./config shared --openssldir=/usr/local
+    else
+        autoreconf -fvi
+        ./configure
+    fi
     make
     sudo -E make install
     cd ..
-    echo "$2 installed"
     sudo ldconfig
+    echo "$2 installed"
 }
 
 sudo apt-get update -qq
@@ -43,6 +47,8 @@ sudo apt-get install -y libpcsclite-dev
 export CC=`which $CC`
 mkdir prerequisites
 cd prerequisites
+install_from_github openssl openssl OpenSSL_1_0_2-stable
+openssl version -a
 install_from_github OpenSC OpenSC master
 # softhsm is required for "make check"
 install_from_github opendnssec SoftHSMv2 develop
